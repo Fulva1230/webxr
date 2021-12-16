@@ -1,7 +1,7 @@
-import {Directive, ElementRef, OnInit} from '@angular/core';
-import * as THREE from 'three';
-import {TubePainter} from 'three/examples/jsm/misc/TubePainter.js';
-import {ARButton} from 'three/examples/jsm/webxr/ARButton.js';
+import {Directive, ElementRef, OnInit} from '@angular/core'
+import * as THREE from 'three'
+import {ARButton} from 'three/examples/jsm/webxr/ARButton.js'
+import {XRFrame, XRHitTestSource} from "three";
 
 @Directive({
   selector: '[appBuscard]'
@@ -12,103 +12,83 @@ export class BuscardDirective implements OnInit {
   }
 
   ngOnInit(): void {
-    let container;
-    let camera: THREE.PerspectiveCamera, scene: THREE.Scene, renderer: THREE.WebGLRenderer;
-    let controller: THREE.Group, painter: any;
+    const container = document.createElement('div')
+    this.el.nativeElement.appendChild(container)
 
-    const cursor = new THREE.Vector3();
+    const scene = new THREE.Scene()
 
-    const init = () => {
-      container = document.createElement('div');
-      this.el.nativeElement.appendChild(container);
+    const camera = new THREE.PerspectiveCamera(70, this.el.nativeElement.clientWidth / this.el.nativeElement.clientHeight, 0.01, 20)
+    const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1)
+    light.position.set(0.5, 1, 0.25)
+    scene.add(light)
 
-      scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true})
+    renderer.setSize(this.el.nativeElement.clientWidth, this.el.nativeElement.clientHeight)
+    renderer.xr.enabled = true
+    container.appendChild(renderer.domElement)
+    this.el.nativeElement.appendChild(ARButton.createButton(renderer, {requiredFeatures: ['hit-test']}))
 
-      camera = new THREE.PerspectiveCamera(70, this.el.nativeElement.clientWidth / this.el.nativeElement.clientHeight, 0.01, 20);
+    const geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32).translate(0, 0.1, 0)
+    const reticle = new THREE.Mesh(new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial())
+    reticle.matrixAutoUpdate = false;
+    reticle.visible = false;
+    scene.add(reticle);
 
-      renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(this.el.nativeElement.clientWidth, this.el.nativeElement.clientHeight);
-      renderer.xr.enabled = true;
-      container.appendChild(renderer.domElement);
-      this.el.nativeElement.appendChild(ARButton.createButton(renderer));
-
-      // model
-
-      const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-      light.position.set(0, 1, 0);
-      scene.add(light);
-
-      //
-
-      painter = new TubePainter();
-      painter.setSize(0.4);
-      painter.mesh.material.side = THREE.DoubleSide;
-      scene.add(painter.mesh);
-
-      function onSelectStart(this: THREE.Group) {
-        this.userData["isSelecting"] = true;
-        this.userData["skipFrames"] = 2;
+    var onSelect = () => {
+      if (reticle.visible) {
+        const material = new THREE.MeshPhongMaterial({color: 0xffffff * Math.random()});
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.setFromMatrixPosition(reticle.matrix);
+        mesh.scale.y = Math.random() * 2 + 1;
+        scene.add(mesh);
       }
-
-      function onSelectEnd(this: THREE.Group) {
-        this.userData["isSelecting"] = false;
-      }
-
-      controller = renderer.xr.getController(0);
-      controller.addEventListener('selectstart', onSelectStart);
-      controller.addEventListener('selectend', onSelectEnd);
-      controller.userData["skipFrames"] = 0;
-      scene.add(controller);
-
-      window.addEventListener('resize', onWindowResize);
     }
 
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
+    const controller = renderer.xr.getController(0)
+    controller.addEventListener('select', onSelect)
+    scene.add(controller)
 
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+    let hitTestSourceRequested = false;
+    let hitTestSource: XRHitTestSource | undefined
 
-    //
+    const render = (timestamp: number, frame?: XRFrame) => {
+      if (frame) {
+        const referenceSpace = renderer.xr.getReferenceSpace();
+        const session = renderer.xr.getSession();
 
-    function handleController(controller: THREE.Group) {
+        if (!hitTestSourceRequested) {
+          session?.requestReferenceSpace('viewer').then(function (referenceSpace) {
+            session?.requestHitTestSource({space: referenceSpace}).then(function (source) {
+              hitTestSource = source;
+            });
+          });
 
-      const userData = controller.userData;
+          session?.addEventListener('end', function () {
+            hitTestSourceRequested = false;
+            hitTestSource = undefined;
+          });
 
-      cursor.set(0, 0, -0.2).applyMatrix4(controller.matrixWorld);
-
-      if (userData['isSelecting'] === true) {
-
-        if (userData['skipFrames'] >= 0) {
-
-          // TODO(mrdoob) Revisit this
-
-          // TODO(mrdoob) Revisit this
-          userData['skipFrames']--;
-          painter.moveTo(cursor);
-
-        } else {
-          painter.lineTo(cursor);
-          painter.update();
+          hitTestSourceRequested = true
         }
 
+        if (hitTestSource && referenceSpace) {
+          const hitTestResults = frame.getHitTestResults(hitTestSource);
+          if (hitTestResults.length) {
+            const hit = hitTestResults[0]
+            reticle.visible = true
+            const reticle_matrix_array = hit.getPose(referenceSpace)?.transform?.matrix
+            if (reticle_matrix_array)
+              reticle.matrix.fromArray(reticle_matrix_array)
+          } else {
+            reticle.visible = false
+          }
+        }
       }
-
+      renderer.render(scene, camera)
     }
 
-    function animate() {
-      renderer.setAnimationLoop(render);
-    }
-
-    function render() {
-      handleController(controller);
-      renderer.render(scene, camera);
-    }
-
-    init();
-    animate();
+    renderer.setAnimationLoop(render)
   }
+
 
 }
