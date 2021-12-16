@@ -5,12 +5,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DemoComponent } from './demo/demo.component';
 import { BallDirective } from './ball.directive';
+import { BuscardDirective } from './xr/buscard.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
     DemoComponent,
-    BallDirective
+    BallDirective,
+    BuscardDirective
   ],
   imports: [
     BrowserModule,
