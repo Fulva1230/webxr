@@ -1,7 +1,7 @@
 import {Directive, ElementRef, OnInit} from '@angular/core'
 import * as THREE from 'three'
 import {ARButton} from 'three/examples/jsm/webxr/ARButton.js'
-import {XRFrame, XRHitTestSource} from "three";
+import {XRFrame, XRHitTestSource, XRReferenceSpace} from "three";
 import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 
 @Directive({
@@ -33,7 +33,6 @@ export class BuscardDirective implements OnInit {
     loader.load('assets/buscard.glb', model => {
       omodel = model
     })
-    const geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32).translate(0, 0.1, 0)
     const reticle = new THREE.Mesh(new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial())
     reticle.matrixAutoUpdate = false;
     reticle.visible = false;
@@ -41,6 +40,7 @@ export class BuscardDirective implements OnInit {
 
     let onSelect = () => {
       if (reticle.visible) {
+        omodel.scene.setRotationFromMatrix(reticle.matrix)
         omodel.scene.position.setFromMatrixPosition(reticle.matrix)
         scene.add(omodel.scene);
       }
@@ -51,6 +51,7 @@ export class BuscardDirective implements OnInit {
     scene.add(controller)
 
     let hitTestSourceRequested = false;
+    let viewerSpace: XRReferenceSpace
     let hitTestSource: XRHitTestSource | undefined
 
     const render = (timestamp: number, frame?: XRFrame) => {
@@ -59,8 +60,9 @@ export class BuscardDirective implements OnInit {
         const session = renderer.xr.getSession();
 
         if (!hitTestSourceRequested) {
-          session?.requestReferenceSpace('viewer').then(function (referenceSpace) {
-            session?.requestHitTestSource({space: referenceSpace}).then(function (source) {
+          session?.requestReferenceSpace('viewer').then(function (iviewerSpace) {
+            viewerSpace = iviewerSpace
+            session?.requestHitTestSource({space: iviewerSpace}).then(function (source) {
               hitTestSource = source;
             });
           });
