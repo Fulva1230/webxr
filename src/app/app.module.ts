@@ -8,6 +8,7 @@ import { BallDirective } from './xr/ball.directive';
 import { BuscardDirective } from './xr/buscard.directive';
 import { PoorArDirective } from './xr/poor-ar.directive';
 import { ModelViewerComponent } from './model-viewer/model-viewer.component';
+import { ModelViewerDirective } from './xr/model-viewer.directive';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { ModelViewerComponent } from './model-viewer/model-viewer.component';
     BallDirective,
     BuscardDirective,
     PoorArDirective,
-    ModelViewerComponent
+    ModelViewerComponent,
+    ModelViewerDirective
   ],
   imports: [
     BrowserModule,
