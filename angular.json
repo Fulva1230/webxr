@@ -33,7 +33,9 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "@google/model-viewer"
+            ]
           },
           "configurations": {
             "production": {
