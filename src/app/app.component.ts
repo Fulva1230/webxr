@@ -1,15 +1,17 @@
-import {Component, OnInit} from '@angular/core';
-import {NbMenuItem, NbMenuService} from "@nebular/theme";
-import {filter} from "rxjs";
+import {Component} from '@angular/core';
+import {NbMenuItem} from "@nebular/theme";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent{
+export class AppComponent {
   title = 'webxr';
-  items: NbMenuItem[] = [{ title: 'Business card' , link: '/model-view'}];
+  items: NbMenuItem[] = [
+    {title: 'Business card', link: '/model-view'},
+    {title: 'Chair', link: '/model-view/chair'}
+  ];
 
   constructor() {
   }
