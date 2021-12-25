@@ -18,9 +18,9 @@ export class AppComponent {
 
   toggleTheme(dark: boolean) {
     if (dark) {
-      this.themeService.changeTheme("dark")
+      this.themeService.changeTheme("custom-dark")
     } else {
-      this.themeService.changeTheme("default")
+      this.themeService.changeTheme("custom-default")
     }
   }
 }
