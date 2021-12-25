@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {NbMenuItem} from "@nebular/theme";
+import {NbMenuItem, NbThemeService} from "@nebular/theme";
 
 @Component({
   selector: 'app-root',
@@ -13,6 +13,14 @@ export class AppComponent {
     {title: 'Chair', link: '/model-view/chair'}
   ];
 
-  constructor() {
+  constructor(private themeService: NbThemeService) {
+  }
+
+  toggleTheme(dark: boolean) {
+    if (dark) {
+      this.themeService.changeTheme("dark")
+    } else {
+      this.themeService.changeTheme("default")
+    }
   }
 }

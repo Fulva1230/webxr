@@ -1,6 +1,18 @@
 <nb-layout>
   <nb-layout-header fixed>
-    <button nbButton [nbContextMenu]="items" nbContextMenuTag="main" nbContextMenuTrigger="hover" >MENU</button>
+    <nb-actions size="small">
+      <nb-action>
+        <button nbButton [nbContextMenu]="items" nbContextMenuTag="main" nbContextMenuTrigger="hover">MENU</button>
+      </nb-action>
+      <nb-action>
+        <nb-toggle labelPosition="start" #themeToggle (checkedChange)="toggleTheme($event)">
+          <nb-icon *ngIf="!themeToggle.checked; else notChecked" icon="moon-outline"></nb-icon>
+          <ng-template #notChecked>
+            <nb-icon icon="moon"></nb-icon>
+          </ng-template>
+        </nb-toggle>
+      </nb-action>
+    </nb-actions>
   </nb-layout-header>
   <nb-layout-column>
     <router-outlet></router-outlet>
