@@ -10,7 +10,8 @@ export class AppComponent {
   title = 'webxr';
   items: NbMenuItem[] = [
     {title: 'Business card', link: '/model-view'},
-    {title: 'Chair', link: '/model-view/chair'}
+    {title: 'Chair', link: '/model-view/chair'},
+    {title: 'Mouse', link: '/model-view/mouse'}
   ];
 
   constructor(private themeService: NbThemeService) {

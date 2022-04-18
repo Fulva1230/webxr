@@ -5,13 +5,15 @@ import { ModelViewRoutingModule } from './model-view-routing.module';
 import {ModelViewerLoaderDirective} from "../model-viewer/model-viewer-loader.directive";
 import { ChairComponent } from './chair/chair.component';
 import { BusinessCardComponent } from './business-card/business-card.component';
+import { MouseComponent } from './mouse/mouse.component';
 
 
 @NgModule({
   declarations: [
     ModelViewerLoaderDirective,
     ChairComponent,
-    BusinessCardComponent
+    BusinessCardComponent,
+    MouseComponent
   ],
   imports: [
     CommonModule,
